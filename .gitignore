@@ -1,0 +1,22 @@
+# Gradle / build output
+.gradle/
+build/
+bin/
+out/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Secrets: the AI API key must never be committed
+.env
+*.env
+!.env.example
+
+# Logs
+*.log
+logs/

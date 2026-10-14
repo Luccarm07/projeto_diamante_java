@@ -1,0 +1,16 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: eureka-server
+
+eureka:
+  client:
+    # The registry does not register with itself
+    register-with-eureka: false
+    fetch-registry: false
+  server:
+    # Faster cleanup of stopped instances during the demo
+    enable-self-preservation: false
+    eviction-interval-timer-in-ms: 5000

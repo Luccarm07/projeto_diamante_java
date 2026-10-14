@@ -1,0 +1,74 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: order-service
+
+  # Optional .env file (properties format) with the AI key. It is in .gitignore.
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:../.env[.properties]
+
+  datasource:
+    # LOCK_TIMEOUT: requests waiting for the locked dish row wait up to 30s instead of failing
+    url: jdbc:h2:mem:orders;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=30000
+    username: sa
+    password: ""
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 60000
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: guest
+    password: guest
+
+  cloud:
+    loadbalancer:
+      cache:
+        ttl: 5s   # notice the second payment instance quickly
+
+  ai:
+    openai:
+      # Never commit a real key: it comes from the OPENAI_API_KEY env variable or the .env file
+      api-key: ${OPENAI_API_KEY:missing-api-key}
+      # OpenAI: https://api.openai.com/v1 | LM Studio: http://localhost:1234/v1 | Ollama: http://localhost:11434/v1
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+      chat:
+        model: ${OPENAI_MODEL:gpt-4o-mini}
+        temperature: 0.3
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+    registry-fetch-interval-seconds: 5
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 10
+
+# Retry of the payment call (@Retryable in PaymentClient)
+# Delays: ~200ms, ~400ms, ~800ms, ~1600ms (+/- 100ms jitter, capped at 2000ms)
+payment:
+  retry:
+    max-retries: 4
+    delay-ms: 200
+    multiplier: 2.0
+    jitter-ms: 100
+    max-delay-ms: 2000
+
+# Bonus: rate limit of POST /orders
+app:
+  rate-limit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    orders-per-second: 20

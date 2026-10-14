@@ -1,0 +1,20 @@
+server:
+  port: 8081   # second instance: ./gradlew :payment-service:bootRun --args='--server.port=8082'
+
+spring:
+  application:
+    name: payment-service
+
+payment:
+  failure-rate: 0.5   # ~50% of the calls answer 500
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+    # Unique id per instance, so 8081 and 8082 show up as two instances of PAYMENT-SERVICE
+    instance-id: ${spring.application.name}:${server.port}
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 10
